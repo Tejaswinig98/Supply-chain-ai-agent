@@ -1,0 +1,7 @@
+warehouse_id,name,city,lat,lon,capacity_units
+WH-ATL,Atlanta DC,"Atlanta, GA",33.749,-84.388,50000
+WH-DAL,Dallas DC,"Dallas, TX",32.7767,-96.797,60000
+WH-CHI,Chicago DC,"Chicago, IL",41.8781,-87.6298,55000
+WH-LAX,Los Angeles DC,"Los Angeles, CA",34.0522,-118.2437,70000
+WH-NYC,New Jersey DC,"Newark, NJ",40.7357,-74.1724,45000
+WH-SEA,Seattle DC,"Seattle, WA",47.6062,-122.3321,40000

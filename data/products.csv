@@ -1,0 +1,16 @@
+product_id,name,category,unit_cost,unit_price,velocity
+P-1001,Steel Bracket 4in,Hardware,2.1,4.5,A
+P-1002,Cardboard Box M,Packaging,0.45,0.95,A
+P-1003,Pallet Wrap Roll,Packaging,3.2,6.75,A
+P-1004,12V DC Motor,Electronics,14.5,29.99,B
+P-1005,USB-C Cable 1m,Electronics,1.8,5.99,A
+P-1006,Industrial Bearing 20mm,Hardware,6.75,13.5,B
+P-1007,Safety Gloves (pair),PPE,1.25,3.2,B
+P-1008,Hard Hat,PPE,8.0,16.99,C
+P-1009,Forklift Battery Pack,Equipment,320.0,599.0,C
+P-1010,Barcode Scanner,Electronics,45.0,89.99,C
+P-1011,Shipping Label Roll,Packaging,4.1,8.25,A
+P-1012,Aluminum Extrusion 1m,Hardware,9.3,18.0,B
+P-1013,N95 Respirator,PPE,0.95,2.5,B
+P-1014,Pallet Jack,Equipment,210.0,399.0,C
+P-1015,Zip Ties (100pk),Hardware,2.9,6.1,A

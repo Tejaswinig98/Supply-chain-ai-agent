@@ -1,0 +1,25 @@
+supplier_id,supplier_name,product_id,lead_time_days,reliability_score,min_order_qty
+SUP-001,Pioneer Supply Co,P-1001,21,0.87,100
+SUP-002,Acme Industrial,P-1001,5,0.95,50
+SUP-003,Ironclad Distributors,P-1002,3,0.84,100
+SUP-004,Acme Industrial,P-1002,14,0.92,100
+SUP-005,Ironclad Distributors,P-1003,10,0.92,50
+SUP-006,Pioneer Supply Co,P-1003,5,0.94,200
+SUP-007,Meridian Parts,P-1004,5,0.98,200
+SUP-008,Pioneer Supply Co,P-1005,10,0.84,200
+SUP-009,Summit Wholesale,P-1006,3,0.94,50
+SUP-010,Ironclad Distributors,P-1006,10,0.83,200
+SUP-011,Vantage Components,P-1007,5,0.94,50
+SUP-012,Summit Wholesale,P-1007,21,0.86,200
+SUP-013,Northgate Logistics,P-1008,14,0.88,500
+SUP-014,Vantage Components,P-1009,21,0.88,200
+SUP-015,Pioneer Supply Co,P-1009,30,0.98,50
+SUP-016,Meridian Parts,P-1010,30,0.86,500
+SUP-017,Summit Wholesale,P-1010,21,0.87,100
+SUP-018,Vantage Components,P-1011,3,0.86,50
+SUP-019,Ironclad Distributors,P-1011,7,0.89,50
+SUP-020,Vantage Components,P-1012,5,0.93,500
+SUP-021,BlueRiver Trading,P-1013,7,0.84,200
+SUP-022,Pioneer Supply Co,P-1013,21,0.92,500
+SUP-023,Northgate Logistics,P-1014,14,0.91,50
+SUP-024,Pioneer Supply Co,P-1015,5,0.93,500
