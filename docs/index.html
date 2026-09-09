@@ -2,6 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   :root{
     color-scheme: light;
@@ -96,23 +97,43 @@
     font-family:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     -webkit-font-smoothing:antialiased;
     line-height:1.45;
+    position:relative;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(620px 440px at 6% -8%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 62%),
+      radial-gradient(560px 420px at 106% 6%, color-mix(in srgb, var(--series-2) 13%, transparent), transparent 60%),
+      radial-gradient(700px 520px at 46% 116%, color-mix(in srgb, var(--seq-400) 9%, transparent), transparent 62%);
   }
   .mono{font-family:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;}
   h1,h2,h3{text-wrap:balance; margin:0; font-weight:700;}
   a{color:var(--accent);}
-  .shell{max-width:1180px; margin:0 auto; padding:28px 20px 80px;}
+  .shell{max-width:1180px; margin:0 auto; padding:28px 20px 80px; position:relative; z-index:1;}
+  .icon{width:16px; height:16px; vertical-align:-3px; margin-right:7px; color:var(--accent); flex:none;}
+  .icon-lg{width:22px; height:22px; vertical-align:-5px;}
 
   /* ---------- Masthead ---------- */
   .masthead{
     display:flex; flex-wrap:wrap; gap:28px; align-items:flex-end; justify-content:space-between;
-    padding-bottom:22px; margin-bottom:26px; border-bottom:1px solid var(--hairline);
+    padding:26px 28px; margin-bottom:26px; border-radius:16px; border:1px solid var(--hairline);
+    background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 7%, var(--surface)) 0%, var(--surface) 62%);
+    box-shadow:var(--shadow);
   }
   .masthead-main{max-width:640px;}
   .eyebrow{
     font-family:"IBM Plex Mono", monospace; font-size:11.5px; font-weight:600; letter-spacing:0.09em;
     text-transform:uppercase; color:var(--accent); margin:0 0 10px;
   }
-  .masthead h1{font-size:clamp(26px,3.4vw,36px); letter-spacing:-0.01em;}
+  .masthead h1{
+    font-size:clamp(28px,3.6vw,40px); letter-spacing:-0.015em; font-weight:800;
+    color:var(--ink);
+    background:linear-gradient(100deg, var(--ink) 12%, var(--accent) 62%, var(--series-2) 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    display:inline-block; border-radius:8px; cursor:text; outline:none; padding:2px 4px; margin:-2px -4px;
+  }
+  .masthead h1:hover{ box-shadow:inset 0 -2px 0 0 var(--accent); }
+  .masthead h1:focus{ box-shadow:0 0 0 2px var(--accent-soft-strong); }
   .masthead p{margin:10px 0 0; color:var(--ink-2); font-size:15px; max-width:56ch;}
   .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;}
   .chip{
@@ -136,8 +157,10 @@
   .kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:34px;}
   .kpi-tile{
     background:var(--surface); border:1px solid var(--hairline); border-radius:12px; padding:16px 18px;
+    transition:transform .15s ease, box-shadow .15s ease;
   }
-  .kpi-label{font-size:12.5px; color:var(--ink-3); margin:0 0 8px;}
+  .kpi-tile:hover{ transform:translateY(-2px); box-shadow:var(--shadow); }
+  .kpi-label{font-size:12.5px; color:var(--ink-3); margin:0 0 8px; display:flex; align-items:center;}
   .kpi-value{font-size:28px; font-weight:700; letter-spacing:-0.01em;}
   .kpi-value.c-critical{color:var(--status-critical);}
   .kpi-value.c-warning{color:color-mix(in srgb, var(--status-warning) 70%, var(--ink) 30%);}
@@ -147,9 +170,14 @@
   section.panel{
     background:var(--surface); border:1px solid var(--hairline); border-radius:14px;
     padding:24px 24px 26px; margin-bottom:22px; box-shadow:var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  section.panel::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--accent), var(--series-2));
   }
   .panel-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:6px;}
-  .panel-head h2{font-size:18px;}
+  .panel-head h2{font-size:18px; display:flex; align-items:center;}
   .panel-sub{color:var(--ink-3); font-size:13px; margin:4px 0 0; max-width:64ch;}
   .panel-body{margin-top:18px;}
 
@@ -243,10 +271,24 @@
 
   /* ---------- Two column ---------- */
   .two-col{display:grid; grid-template-columns:1.3fr 1fr; gap:28px;}
-  @media (max-width:840px){ .two-col{grid-template-columns:1fr;} .kpi-row{grid-template-columns:repeat(2,1fr);} }
+  .two-col-even{display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-bottom:26px;}
+  @media (max-width:840px){ .two-col{grid-template-columns:1fr;} .two-col-even{grid-template-columns:1fr;} .kpi-row{grid-template-columns:repeat(2,1fr);} }
+
+  .bar-col{cursor:pointer;}
+  .bar-col rect.bar{transition:opacity .12s ease;}
+  .bar-col:hover rect.bar{opacity:0.82;}
+  .bar-value{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; fill:var(--ink);}
+  .bar-cat{fill:var(--ink-3); font-size:11px;}
+
+  .map-card{padding:6px 0;}
+  .map-land{fill:color-mix(in srgb, var(--accent) 9%, var(--chart-grid)); stroke:var(--chart-axis); stroke-width:1.1; stroke-linejoin:round;}
+  .map-pin-halo{fill:var(--series-1); opacity:0.16;}
+  .map-pin{fill:var(--series-1); stroke:var(--chart-surface); stroke-width:2;}
+  .map-pin-label{fill:var(--ink-2); font-size:11.5px; font-weight:600; font-family:"IBM Plex Mono",monospace;}
 
   .stat-mini-row{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:16px;}
-  .stat-mini{border:1px solid var(--hairline); border-radius:10px; padding:12px 14px; background:var(--surface-raised);}
+  .stat-mini{border:1px solid var(--hairline); border-radius:10px; padding:12px 14px; background:var(--surface-raised); transition:transform .15s ease, box-shadow .15s ease;}
+  .stat-mini:hover{ transform:translateY(-2px); box-shadow:var(--shadow); }
   .stat-mini-label{font-size:11px; color:var(--ink-3); margin-bottom:4px;}
   .stat-mini-value{font-size:18px; font-weight:700; font-variant-numeric:tabular-nums;}
 
@@ -261,7 +303,8 @@
   /* ---------- How it works ---------- */
   .how-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px;}
   @media (max-width:700px){ .how-grid{grid-template-columns:1fr;} }
-  .how-card{border:1px solid var(--hairline); border-radius:10px; padding:14px 16px; background:var(--surface-raised);}
+  .how-card{border:1px solid var(--hairline); border-radius:10px; padding:14px 16px; background:var(--surface-raised); transition:transform .15s ease, box-shadow .15s ease;}
+  .how-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow); }
   .how-card h3{font-size:13.5px; margin-bottom:6px;}
   .how-card p{margin:0; font-size:12.5px; color:var(--ink-2);}
   .how-formula{
@@ -269,18 +312,50 @@
     color:var(--accent); background:var(--accent-soft); border-radius:6px; padding:6px 9px; overflow-x:auto;
   }
 
+  /* ---------- Data source / upload panel ---------- */
+  .upload-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px;}
+  .upload-card{
+    border:1.5px dashed var(--hairline-strong); border-radius:10px; padding:13px 14px;
+    background:var(--surface-raised); transition:border-color .15s ease, background .15s ease;
+  }
+  .upload-card:focus-within, .upload-card:hover{ border-color:var(--accent); background:var(--accent-soft); }
+  .upload-label{display:flex; align-items:center; font-weight:600; font-size:13px; margin-bottom:5px; color:var(--ink);}
+  .upload-cols{font-size:10.5px; color:var(--ink-3); margin:0 0 9px; word-break:break-word; line-height:1.5;}
+  .upload-status{font-size:11.5px; margin:7px 0 0; min-height:14px; font-weight:500;}
+  .upload-status.ok{color:var(--status-good);}
+  .upload-status.err{color:var(--status-critical);}
+  input[type="file"]{font-size:11.5px; color:var(--ink-2); max-width:100%; width:100%;}
+  .privacy-note{
+    display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--ink-2);
+    background:var(--accent-soft); border:1px solid var(--accent-soft-strong); border-radius:10px;
+    padding:10px 13px; margin-top:16px;
+  }
+
   /* ---------- Footer ---------- */
   footer{margin-top:36px; padding-top:20px; border-top:1px solid var(--hairline); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; color:var(--ink-3); font-size:12.5px;}
   footer .foot-note{max-width:60ch;}
   .visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
 </style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <symbol id="ic-warehouse" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><path d="M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-box" viewBox="0 0 24 24"><path d="M21 7.5l-9-4.5-9 4.5 9 4.5 9-4.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 7.5v9l9 4.5 9-4.5v-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12v9" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M12 3.2l9.5 17.3H2.5L12 3.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 10v4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1" fill="currentColor"/></symbol>
+  <symbol id="ic-route" viewBox="0 0 24 24"><circle cx="5" cy="19" r="2.1" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="19" cy="5" r="2.1" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 18c4-1 4-5 8-6s4-5 2-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="ic-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 6h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-layers" viewBox="0 0 24 24"><path d="M12 3.2l9 5-9 5-9-5 9-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13.2l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M12 15.5V4M7 9l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15.5v3.5a2 2 0 002 2h12a2 2 0 002-2v-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="ic-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 10.5V7.5a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 4.5h8.5a2.5 2.5 0 012.5 2.5v12.5H6.5A2.5 2.5 0 014 16.9V4.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 4.5h-3.5v12.5H20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+</defs>
+</svg>
 <div class="shell">
 
   <header class="masthead">
     <div class="masthead-main">
-      <p class="eyebrow">Supply chain AI agent &middot; interactive prototype</p>
-      <h1>Network Control</h1>
-      <p>A live inventory &amp; logistics optimization engine — the same forecasting, EOQ, reorder-point, and route math from the Python agent, ported to run entirely in your browser. Every number below is computed on the spot, not canned.</p>
+      <p class="eyebrow">Supply chain AI agent &middot; interactive dashboard</p>
+      <h1 id="dashTitle" contenteditable="true" spellcheck="false" title="Click to rename for your team">Network Control</h1>
+      <p>Tracks inventory levels, demand forecasts, and delivery routes across your warehouse network, and flags what needs attention.</p>
       <div class="chips">
         <span class="chip">Demand forecasting</span>
         <span class="chip">EOQ &amp; safety stock</span>
@@ -290,16 +365,111 @@
     </div>
     <div class="masthead-aside">
       <span class="badge-live"><span class="dot-pulse" aria-hidden="true"></span>Live computation, in-browser</span>
-      <span>Synthetic demo data &middot; 6 warehouses &middot; 15 SKUs &middot; 365 days</span>
+      <span id="dataBadge">Synthetic demo data &middot; 6 warehouses &middot; 15 SKUs &middot; 365 days</span>
     </div>
   </header>
 
+  <section class="panel" aria-labelledby="h-data">
+    <div class="panel-head">
+      <div>
+        <h2 id="h-data"><svg class="icon icon-lg"><use href="#ic-upload"></use></svg>Bring your own data</h2>
+        <p class="panel-sub">Swap in your team's real exports — same five tables, same column names as the demo below. Upload warehouses and products first if you're replacing everything, since inventory, suppliers, and demand history all reference their IDs.</p>
+      </div>
+      <button class="btn" id="resetDemoBtn" type="button">Reset to demo data</button>
+    </div>
+    <div class="panel-body">
+      <div class="upload-grid">
+        <div class="upload-card">
+          <label class="upload-label" for="up-warehouses">Warehouses</label>
+          <p class="upload-cols mono">warehouse_id, name, city, lat, lon</p>
+          <input type="file" accept=".csv" id="up-warehouses">
+          <p class="upload-status" id="status-warehouses"></p>
+        </div>
+        <div class="upload-card">
+          <label class="upload-label" for="up-products">Products</label>
+          <p class="upload-cols mono">product_id, name, unit_cost, unit_price</p>
+          <input type="file" accept=".csv" id="up-products">
+          <p class="upload-status" id="status-products"></p>
+        </div>
+        <div class="upload-card">
+          <label class="upload-label" for="up-suppliers">Suppliers</label>
+          <p class="upload-cols mono">product_id, supplier_name, lead_time_days, reliability_score</p>
+          <input type="file" accept=".csv" id="up-suppliers">
+          <p class="upload-status" id="status-suppliers"></p>
+        </div>
+        <div class="upload-card">
+          <label class="upload-label" for="up-inventory">Inventory</label>
+          <p class="upload-cols mono">warehouse_id, product_id, on_hand_qty</p>
+          <input type="file" accept=".csv" id="up-inventory">
+          <p class="upload-status" id="status-inventory"></p>
+        </div>
+        <div class="upload-card">
+          <label class="upload-label" for="up-demand">Demand history</label>
+          <p class="upload-cols mono">date, warehouse_id, product_id, units_sold</p>
+          <input type="file" accept=".csv" id="up-demand">
+          <p class="upload-status" id="status-demand_history"></p>
+        </div>
+      </div>
+      <div class="privacy-note">
+        <svg class="icon" style="margin-top:1px;"><use href="#ic-lock"></use></svg>
+        <span>Files are parsed and calculated entirely in your browser — nothing is uploaded to a server, so this is safe to use with real inventory numbers. Data lasts only for this browser tab; reload the page to return to the demo.</span>
+      </div>
+    </div>
+  </section>
+
   <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="two-col-even">
+    <section class="panel" aria-labelledby="h-status-chart">
+      <div class="panel-head">
+        <div>
+          <h2 id="h-status-chart"><svg class="icon icon-lg"><use href="#ic-alert"></use></svg>Inventory status breakdown</h2>
+          <p class="panel-sub">How many product &times; warehouse positions fall into each health status right now.</p>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-card">
+          <svg class="viz" id="statusBarChart" viewBox="0 0 420 260" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="statusBarTooltip"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-tier-chart">
+      <div class="panel-head">
+        <div>
+          <h2 id="h-tier-chart"><svg class="icon icon-lg"><use href="#ic-layers"></use></svg>ABC tier &mdash; revenue share</h2>
+          <p class="panel-sub">Trailing 90-day revenue, rolled up by Pareto tier.</p>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-card">
+          <svg class="viz" id="tierBarChart" viewBox="0 0 420 260" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="tierBarTooltip"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-map">
+    <div class="panel-head">
+      <div>
+        <h2 id="h-map"><svg class="icon icon-lg"><use href="#ic-warehouse"></use></svg>Warehouse network</h2>
+        <p class="panel-sub" id="mapSub">Every distribution center in the network, plotted by location.</p>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="chart-card map-card">
+        <svg class="viz" id="usMap" viewBox="0 0 640 359.2" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="mapTooltip"></div>
+      </div>
+    </div>
+  </section>
 
   <section class="panel" aria-labelledby="h-health">
     <div class="panel-head">
       <div>
-        <h2 id="h-health">Inventory health scan</h2>
+        <h2 id="h-health"><svg class="icon icon-lg"><use href="#ic-alert"></use></svg>Inventory health scan</h2>
         <p class="panel-sub">Every product &times; warehouse position, scored against its reorder point in real time. Filter to see what actually needs a decision this week.</p>
       </div>
     </div>
@@ -344,7 +514,7 @@
     <section class="panel" aria-labelledby="h-abc">
       <div class="panel-head">
         <div>
-          <h2 id="h-abc">ABC classification</h2>
+          <h2 id="h-abc"><svg class="icon icon-lg"><use href="#ic-layers"></use></svg>ABC classification</h2>
           <p class="panel-sub">Products ranked by trailing 90-day revenue &mdash; a Pareto view of where inventory attention actually pays off.</p>
         </div>
       </div>
@@ -356,7 +526,7 @@
 
     <section class="panel" aria-labelledby="h-route">
       <div>
-        <h2 id="h-route">Route optimizer</h2>
+        <h2 id="h-route"><svg class="icon icon-lg"><use href="#ic-route"></use></svg>Route optimizer</h2>
         <p class="panel-sub">Nearest-neighbor construction + 2-opt refinement over great-circle distance.</p>
       </div>
       <div class="panel-body">
@@ -384,7 +554,7 @@
   <section class="panel" aria-labelledby="h-forecast">
     <div class="panel-head">
       <div>
-        <h2 id="h-forecast">Demand forecast explorer</h2>
+        <h2 id="h-forecast"><svg class="icon icon-lg"><use href="#ic-trend"></use></svg>Demand forecast explorer</h2>
         <p class="panel-sub">Weighted moving average + trailing-trend forecast. Pick any product and warehouse to see historical demand and the projected reorder-relevant horizon.</p>
       </div>
     </div>
@@ -424,7 +594,7 @@
   <section class="panel" aria-labelledby="h-how">
     <div class="panel-head">
       <div>
-        <h2 id="h-how">How the numbers are computed</h2>
+        <h2 id="h-how"><svg class="icon icon-lg"><use href="#ic-book"></use></svg>How the numbers are computed</h2>
         <p class="panel-sub">No black box &mdash; the same four formulas run every recommendation on this page.</p>
       </div>
     </div>
@@ -452,10 +622,7 @@
     </div>
   </section>
 
-  <footer>
-    <span class="foot-note">Runs entirely client-side on synthetic demand data generated for this demo. The downloadable Python version adds a Claude-powered conversational agent for natural-language questions over the same engine.</span>
-    <span>Built with Claude</span>
-  </footer>
+
 </div>
 
 <script>
@@ -475,18 +642,42 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
   const STATUS_CLASS = {STOCKOUT_RISK:"stockout", REORDER_NOW:"reorder", OVERSTOCK:"overstock", HEALTHY:"healthy"};
   const STATUS_VAR = {STOCKOUT_RISK:"--status-critical", REORDER_NOW:"--status-warning", OVERSTOCK:"--status-serious", HEALTHY:"--status-good"};
 
-  /* ============================= DATA INDEX ============================= */
-  const WH = DATA.warehouses;
-  const PR = DATA.products;
-  const SUP = DATA.suppliers;
-  const INV = DATA.inventory;
-  const GRID = DATA.demandGrid; // [whIdx][prIdx] -> [nDays]
-  const N_DAYS = DATA.nDays;
+  /* Continental US outline (simplified from public domain state boundaries), plus the linear
+     equirectangular projection (longitude corrected by cos(latitude)) used to place it and to
+     plot warehouse pins on the same coordinate system. */
+  const US_MAP = {
+    lonMin: -124.624399, latMax: 49.383625, cosLat: 0.7959787391973477,
+    scale: 12.989267786760632, pad: 22, w: 640, h: 359.2
+  };
+  const US_MAP_PATH = "M 333.2,279.7 L 331.0,276.5 L 328.6,277.7 L 329.4,282.7 L 318.1,291.9 L 311.1,290.7 L 313.8,294.0 L 309.9,294.5 L 302.3,308.1 L 301.8,314.8 L 305.4,325.8 L 302.2,327.2 L 285.1,318.7 L 282.0,306.5 L 262.0,277.0 L 252.4,275.5 L 242.7,287.0 L 230.0,278.5 L 226.0,266.4 L 210.6,251.3 L 191.7,250.6 L 191.7,256.5 L 162.1,256.5 L 123.4,241.4 L 124.4,238.5 L 99.5,240.8 L 96.0,230.9 L 86.2,225.2 L 84.6,221.3 L 74.4,216.4 L 64.9,216.0 L 63.3,207.5 L 50.2,191.7 L 51.3,185.4 L 44.8,179.7 L 44.9,167.9 L 43.9,170.8 L 39.4,169.5 L 31.2,157.5 L 30.0,146.1 L 24.7,140.5 L 27.8,125.2 L 22.7,107.0 L 26.7,94.4 L 29.0,64.5 L 33.2,62.6 L 27.8,61.7 L 29.5,59.0 L 22.0,41.4 L 22.3,35.0 L 40.9,38.9 L 43.8,41.5 L 44.8,48.8 L 46.7,39.6 L 41.3,27.0 L 326.7,27.0 L 326.7,22.0 L 328.7,22.1 L 332.5,30.7 L 340.8,33.2 L 349.1,31.9 L 363.8,39.4 L 371.3,36.9 L 384.0,39.9 L 372.4,44.8 L 359.2,56.8 L 371.3,53.5 L 370.8,56.1 L 375.7,58.6 L 398.8,47.0 L 401.1,48.0 L 396.1,55.7 L 401.7,54.2 L 408.3,59.6 L 431.0,56.1 L 431.4,59.7 L 440.7,59.1 L 442.1,65.5 L 447.4,66.1 L 435.2,65.3 L 434.8,67.9 L 426.5,64.7 L 414.5,69.8 L 413.2,67.7 L 402.5,79.6 L 400.2,84.6 L 410.7,76.1 L 401.6,101.7 L 402.4,114.0 L 406.6,122.5 L 414.9,119.3 L 419.2,108.6 L 415.9,97.2 L 418.7,83.0 L 425.4,77.3 L 426.3,82.2 L 427.7,75.9 L 431.4,74.2 L 430.5,71.4 L 434.6,69.0 L 449.1,77.1 L 448.9,87.5 L 443.0,96.2 L 445.5,97.3 L 453.2,91.0 L 456.0,93.9 L 457.3,109.9 L 454.5,109.4 L 447.7,121.4 L 457.7,125.9 L 492.2,110.7 L 495.2,107.7 L 493.0,101.5 L 514.8,101.4 L 522.3,98.1 L 521.5,89.4 L 536.9,78.7 L 571.2,78.8 L 572.7,75.4 L 580.1,73.2 L 586.8,56.9 L 594.8,47.0 L 598.1,50.7 L 605.0,48.3 L 609.6,52.1 L 609.5,70.2 L 613.1,71.1 L 612.7,75.3 L 618.0,81.5 L 607.0,87.7 L 605.1,85.6 L 603.3,88.7 L 597.3,86.4 L 594.4,92.9 L 584.1,96.1 L 576.5,114.4 L 581.2,120.3 L 587.4,120.4 L 586.7,122.2 L 573.2,124.7 L 572.9,121.5 L 571.5,126.1 L 556.7,127.2 L 549.0,131.1 L 563.2,128.9 L 565.1,131.0 L 553.3,135.8 L 543.5,135.5 L 542.6,137.5 L 545.6,140.0 L 544.4,147.0 L 537.2,157.0 L 528.8,148.8 L 534.6,164.0 L 525.0,181.3 L 528.1,170.5 L 525.9,171.0 L 526.3,167.1 L 521.3,163.4 L 521.8,155.0 L 525.0,149.6 L 520.9,152.8 L 519.0,159.9 L 521.0,169.1 L 514.2,164.1 L 512.3,165.2 L 511.8,162.2 L 511.5,165.4 L 522.3,171.3 L 521.9,181.8 L 517.8,182.0 L 524.8,183.8 L 527.3,193.9 L 517.8,196.7 L 527.0,196.7 L 527.1,201.3 L 519.8,204.8 L 521.8,209.6 L 519.6,213.2 L 512.2,213.9 L 504.3,223.8 L 494.4,226.5 L 490.0,234.7 L 474.2,247.4 L 468.9,259.0 L 470.4,276.5 L 478.0,293.8 L 483.1,315.4 L 481.9,329.1 L 478.2,336.2 L 472.2,337.2 L 469.4,328.1 L 466.0,327.8 L 462.1,314.3 L 460.1,315.9 L 455.5,307.1 L 458.7,301.9 L 455.3,303.8 L 453.9,301.2 L 456.0,288.2 L 441.8,272.4 L 428.5,277.7 L 422.1,270.7 L 414.8,268.6 L 404.2,270.6 L 400.6,264.9 L 399.2,269.6 L 391.9,268.4 L 381.9,273.2 L 387.4,275.3 L 383.1,280.1 L 390.3,284.4 L 388.7,286.6 L 381.5,280.5 L 378.9,284.8 L 374.2,283.1 L 371.7,285.7 L 360.5,275.9 L 356.1,279.8 L 346.6,276.7 L 333.2,279.7 Z";
 
-  const whIndex = {}; WH.forEach((w,i)=>whIndex[w.warehouse_id]=i);
-  const prIndex = {}; PR.forEach((p,i)=>prIndex[p.product_id]=i);
-  const prById = {}; PR.forEach(p=>prById[p.product_id]=p);
-  const whById = {}; WH.forEach(w=>whById[w.warehouse_id]=w);
+  function mapProject(lat, lon){
+    return {
+      x: US_MAP.pad + (lon - US_MAP.lonMin) * US_MAP.cosLat * US_MAP.scale,
+      y: US_MAP.pad + (US_MAP.latMax - lat) * US_MAP.scale
+    };
+  }
+
+  /* ============================= DATA INDEX ============================= */
+  const DEMO_DATA = JSON.parse(JSON.stringify(DATA)); // pristine copy, for "Reset to demo data"
+  let usingDemoData = true;
+
+  let WH = DATA.warehouses;
+  let PR = DATA.products;
+  let SUP = DATA.suppliers;
+  let INV = DATA.inventory;
+  let GRID = DATA.demandGrid; // [whIdx][prIdx] -> [nDays]
+  let N_DAYS = DATA.nDays;
+  let START_DATE = DATA.startDate;
+
+  let whIndex = {}, prIndex = {}, prById = {}, whById = {};
+  function buildIndexes(){
+    whIndex = {}; WH.forEach((w,i)=>whIndex[w.warehouse_id]=i);
+    prIndex = {}; PR.forEach((p,i)=>prIndex[p.product_id]=i);
+    prById = {}; PR.forEach(p=>prById[p.product_id]=p);
+    whById = {}; WH.forEach(w=>whById[w.warehouse_id]=w);
+  }
+  buildIndexes();
 
   function bestSupplier(productId){
     const subs = SUP.filter(s=>s.product_id===productId);
@@ -497,15 +688,20 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
   }
 
   function demandSeries(productId, warehouseId){
+    // defensive: while tables are being uploaded one at a time, IDs can briefly
+    // reference a table that hasn't been replaced yet — never throw, return zeros instead
     const pi = prIndex[productId];
+    if(pi===undefined) return new Array(N_DAYS).fill(0);
     if(warehouseId){
       const wi = whIndex[warehouseId];
-      return GRID[wi][pi].slice();
+      const row = (wi!==undefined && GRID[wi]) ? GRID[wi][pi] : null;
+      return row ? row.slice() : new Array(N_DAYS).fill(0);
     }
     const out = new Array(N_DAYS).fill(0);
     for(let wi=0; wi<WH.length; wi++){
-      const s = GRID[wi][pi];
-      for(let d=0; d<N_DAYS; d++) out[d]+=s[d];
+      const s = GRID[wi] && GRID[wi][pi];
+      if(!s) continue;
+      for(let d=0; d<N_DAYS; d++) out[d]+=(s[d]||0);
     }
     return out;
   }
@@ -552,6 +748,7 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
 
   function calculateEOQ(productId, warehouseId){
     const product = prById[productId];
+    if(!product) return { annualDemandEst:0, unitCost:0, eoqUnits:0 };
     const series = demandSeries(productId, warehouseId);
     const window = Math.min(90, series.length);
     const avgDaily = mean(series.slice(series.length-window));
@@ -607,7 +804,9 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
   }
 
   function inventoryHealthScan(){
-    const rows = INV.map(inv=>{
+    const rows = INV.filter(inv =>
+      prById[inv.product_id] !== undefined && whIndex[inv.warehouse_id] !== undefined
+    ).map(inv=>{
       const rp = calculateReorderPoint(inv.product_id, inv.warehouse_id, SERVICE_LEVEL);
       const onHandQty = rp.currentOnHand, reorderPt = rp.reorderPointUnits;
       let status;
@@ -686,15 +885,15 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
     const reorder = health.filter(r=>r.status==="REORDER_NOW").length;
     const overstock = health.filter(r=>r.status==="OVERSTOCK").length;
     const tiles = [
-      {label:"Warehouses in network", value: WH.length, sub: WH.map(w=>w.warehouse_id).join(" · ")},
-      {label:"SKUs tracked", value: PR.length, sub: "365 days of demand history each"},
-      {label:"Stockout-risk positions", value: stockout, sub: "of "+INV.length+" product × warehouse pairs", cls: stockout>0?"c-critical":""},
-      {label:"Needs reorder / overstocked", value: reorder+overstock, sub: reorder+" reorder now · "+overstock+" overstocked", cls: (reorder+overstock)>0?"c-warning":""}
+      {icon:"ic-warehouse", label:"Warehouses in network", value: WH.length, sub: WH.map(w=>w.warehouse_id).join(" · ")},
+      {icon:"ic-box", label:"SKUs tracked", value: PR.length, sub: N_DAYS+" days of demand history each"},
+      {icon:"ic-alert", label:"Stockout-risk positions", value: stockout, sub: "of "+INV.length+" product × warehouse pairs", cls: stockout>0?"c-critical":""},
+      {icon:"ic-trend", label:"Needs reorder / overstocked", value: reorder+overstock, sub: reorder+" reorder now · "+overstock+" overstocked", cls: (reorder+overstock)>0?"c-warning":""}
     ];
     const el = document.getElementById("kpiRow");
     el.innerHTML = tiles.map(t=>`
       <div class="kpi-tile">
-        <p class="kpi-label">${esc(t.label)}</p>
+        <p class="kpi-label"><svg class="icon"><use href="#${t.icon}"></use></svg>${esc(t.label)}</p>
         <div class="kpi-value ${t.cls||""}">${esc(t.value)}</div>
         <p class="kpi-sub">${esc(t.sub)}</p>
       </div>`).join("");
@@ -765,6 +964,112 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
     }).join("");
   }
 
+  /* ============================= RENDER: VERTICAL BAR CHARTS ============================= */
+  function renderBarChart(svgId, tooltipId, bars, opts){
+    const W=420,H=260, padL=(opts.padL||40),padR=16,padT=18,padB=44;
+    const plotW=W-padL-padR, plotH=H-padT-padB;
+    const max = Math.max(...bars.map(b=>b.value), 1) * 1.15;
+    const n = bars.length;
+    const gap = 22;
+    const barW = (plotW - gap*(n-1)) / n;
+    const y = v => padT + plotH - (v/max)*plotH;
+
+    let grid="";
+    const ticks=4;
+    for(let t=0;t<=ticks;t++){
+      const v = max*t/ticks;
+      const yy = y(v);
+      grid += `<line class="grid-line" x1="${padL}" x2="${W-padR}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}"></line>`;
+      grid += `<text class="axis-label" x="${padL-8}" y="${(yy+3).toFixed(1)}" text-anchor="end">${opts.axisFmt?opts.axisFmt(v):Math.round(v)}</text>`;
+    }
+    grid += `<line class="axis-line" x1="${padL}" x2="${W-padR}" y1="${(padT+plotH).toFixed(1)}" y2="${(padT+plotH).toFixed(1)}"></line>`;
+
+    const cols = bars.map((b,i)=>{
+      const bx = padL + i*(barW+gap);
+      const by = y(b.value);
+      const bh = (padT+plotH) - by;
+      return `<g class="bar-col" data-label="${esc(b.label)}" data-display="${esc(b.display)}">
+        <rect class="bar" x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(bh,0).toFixed(1)}" rx="4" fill="${b.color}"></rect>
+        <text class="bar-value" x="${(bx+barW/2).toFixed(1)}" y="${(by-8).toFixed(1)}" text-anchor="middle">${esc(b.display)}</text>
+        <text class="bar-cat axis-label" x="${(bx+barW/2).toFixed(1)}" y="${(padT+plotH+18).toFixed(1)}" text-anchor="middle">${esc(b.label)}</text>
+      </g>`;
+    }).join("");
+
+    const svg = document.getElementById(svgId);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.innerHTML = grid + cols;
+
+    const tooltip = document.getElementById(tooltipId);
+    svg.querySelectorAll(".bar-col").forEach(col=>{
+      col.addEventListener("pointermove", e=>{
+        showTooltip(tooltip, e, `<div class="tt-value">${col.dataset.display}</div><div class="tt-label">${col.dataset.label}</div>`);
+      });
+      col.addEventListener("pointerleave", ()=>hideTooltip(tooltip));
+    });
+  }
+
+  function renderStatusBarChart(health){
+    const counts = {}; STATUS_ORDER.forEach(s=>counts[s]=0);
+    health.forEach(r=>counts[r.status]++);
+    const order = ["HEALTHY","OVERSTOCK","REORDER_NOW","STOCKOUT_RISK"];
+    const bars = order.map(s=>({
+      label: STATUS_LABEL[s].toUpperCase(),
+      value: counts[s],
+      display: String(counts[s]),
+      color: `var(${STATUS_VAR[s]})`
+    }));
+    renderBarChart("statusBarChart","statusBarTooltip", bars, {});
+  }
+
+  function renderTierBarChart(){
+    const rows = abcClassification();
+    const tierColor = {A:"var(--seq-600)", B:"var(--seq-400)", C:"var(--seq-250)"};
+    const totals = {A:0,B:0,C:0};
+    rows.forEach(r=>{ totals[r.tier]+=r.revenue; });
+    const bars = ["A","B","C"].map(t=>({
+      label: "TIER "+t,
+      value: totals[t],
+      display: fmtMoney(totals[t]),
+      color: tierColor[t]
+    }));
+    renderBarChart("tierBarChart","tierBarTooltip", bars, { axisFmt: v=>fmtMoney(v), padL: 76 });
+  }
+
+  /* ============================= RENDER: WAREHOUSE NETWORK MAP ============================= */
+  function renderMap(){
+    const svg = document.getElementById("usMap");
+    const inRange = w => w.lat!=null && w.lon!=null && w.lat>=15 && w.lat<=55 && w.lon>=-135 && w.lon<=-60;
+    const onMap = WH.filter(inRange);
+    const offMap = WH.length - onMap.length;
+
+    const pins = onMap.map(w=>{
+      const p = mapProject(w.lat, w.lon);
+      return `<g class="map-node" data-id="${esc(w.warehouse_id)}" data-name="${esc(w.name||w.warehouse_id)}" data-city="${esc(w.city||"")}" data-cap="${w.capacity_units!=null?fmtNum(w.capacity_units)+' unit capacity':''}">
+        <circle class="map-pin-halo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="13"></circle>
+        <circle class="map-pin" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="6"></circle>
+        <text class="map-pin-label" x="${p.x.toFixed(1)}" y="${(p.y-16).toFixed(1)}" text-anchor="middle">${esc(w.warehouse_id)}</text>
+      </g>`;
+    }).join("");
+
+    svg.innerHTML = `<path class="map-land" d="${US_MAP_PATH}"></path>${pins}`;
+
+    const tooltip = document.getElementById("mapTooltip");
+    svg.querySelectorAll(".map-node").forEach(node=>{
+      node.addEventListener("pointermove", e=>{
+        const parts = [node.dataset.city, node.dataset.cap].filter(Boolean).join(" &middot; ");
+        showTooltip(tooltip, e, `<div class="tt-value">${node.dataset.name}</div><div class="tt-label">${node.dataset.id}${parts?" &middot; "+parts:""}</div>`);
+      });
+      node.addEventListener("pointerleave", ()=>hideTooltip(tooltip));
+    });
+
+    const sub = document.getElementById("mapSub");
+    if(sub){
+      sub.textContent = offMap>0
+        ? `Every distribution center in the network, plotted by location. ${onMap.length} shown on the continental map (${offMap} outside its bounds).`
+        : `Every distribution center in the network, plotted by location.`;
+    }
+  }
+
   /* ============================= RENDER: FORECAST CHART ============================= */
   const fcTooltip = document.getElementById("forecastTooltip");
   function renderForecast(){
@@ -827,7 +1132,7 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
       ${dots}
     `;
 
-    const dateStart = new Date(DATA.startDate+"T00:00:00Z");
+    const dateStart = new Date(START_DATE+"T00:00:00Z");
     const offsetDays = full.length-shown;
     svg.querySelectorAll(".fc-dot").forEach(dot=>{
       dot.addEventListener("pointermove", e=>{
@@ -854,7 +1159,7 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
       return {x,y};
     };
   }
-  const project = projectAll();
+  let project = projectAll();
 
   function selectedWarehouses(){
     return Array.from(document.querySelectorAll(".wh-check input:checked")).map(el=>el.value);
@@ -915,25 +1220,30 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
   function populateSelects(){
     const whFilter = document.getElementById("warehouseFilter");
     const fcWh = document.getElementById("fcWarehouse");
+    whFilter.innerHTML = `<option value="ALL">All warehouses</option>`;
+    fcWh.innerHTML = `<option value="ALL">All warehouses</option>`;
     WH.forEach(w=>{
-      whFilter.insertAdjacentHTML("beforeend", `<option value="${w.warehouse_id}">${esc(w.warehouse_id)} — ${esc(w.city)}</option>`);
-      fcWh.insertAdjacentHTML("beforeend", `<option value="${w.warehouse_id}">${esc(w.warehouse_id)} — ${esc(w.city)}</option>`);
+      const label = esc(w.warehouse_id) + (w.city ? " — "+esc(w.city) : "");
+      whFilter.insertAdjacentHTML("beforeend", `<option value="${w.warehouse_id}">${label}</option>`);
+      fcWh.insertAdjacentHTML("beforeend", `<option value="${w.warehouse_id}">${label}</option>`);
     });
     const fcProduct = document.getElementById("fcProduct");
+    fcProduct.innerHTML = "";
     PR.forEach(p=>{
-      fcProduct.insertAdjacentHTML("beforeend", `<option value="${p.product_id}">${esc(p.name)} (${esc(p.product_id)})</option>`);
+      fcProduct.insertAdjacentHTML("beforeend", `<option value="${p.product_id}">${esc(p.name||p.product_id)} (${esc(p.product_id)})</option>`);
     });
-    fcProduct.value = "P-1005";
-    fcWh.value = "WH-CHI";
+    fcProduct.value = (usingDemoData && PR.some(p=>p.product_id==="P-1005")) ? "P-1005" : (PR[0] ? PR[0].product_id : "");
+    fcWh.value = (usingDemoData && WH.some(w=>w.warehouse_id==="WH-CHI")) ? "WH-CHI" : "ALL";
 
     const whGrid = document.getElementById("whGrid");
     whGrid.innerHTML = WH.map(w=>`
       <label class="wh-check on">
-        <input type="checkbox" value="${w.warehouse_id}" checked>${w.warehouse_id}
+        <input type="checkbox" value="${w.warehouse_id}" checked>${esc(w.warehouse_id)}
       </label>`).join("");
     const startSel = document.getElementById("startWarehouse");
-    WH.forEach(w=> startSel.insertAdjacentHTML("beforeend", `<option value="${w.warehouse_id}">${esc(w.warehouse_id)} — ${esc(w.city)}</option>`));
-    startSel.value = "WH-ATL";
+    startSel.innerHTML = "";
+    WH.forEach(w=> startSel.insertAdjacentHTML("beforeend", `<option value="${w.warehouse_id}">${esc(w.warehouse_id)} — ${esc(w.city||"")}</option>`));
+    startSel.value = (usingDemoData && WH.some(w=>w.warehouse_id==="WH-ATL")) ? "WH-ATL" : (WH[0] ? WH[0].warehouse_id : "");
 
     whGrid.querySelectorAll(".wh-check").forEach(lbl=>{
       const input = lbl.querySelector("input");
@@ -948,16 +1258,197 @@ const DATA = {"startDate":"2025-08-13","nDays":365,"warehouses":[{"warehouse_id"
     document.getElementById("startWarehouse").addEventListener("change", renderRoute);
   }
 
-  function init(){
+  function updateDataBadge(){
+    const badge = document.getElementById("dataBadge");
+    if(!badge) return;
+    const label = usingDemoData ? "Synthetic demo data" : "Custom data loaded";
+    badge.textContent = `${label} · ${WH.length} warehouses · ${PR.length} SKUs · ${N_DAYS} days`;
+  }
+
+  function rebuildAndRender(){
+    buildIndexes();
+    project = projectAll();
     populateSelects();
-    bindEvents();
     HEALTH_ALL = inventoryHealthScan();
     renderKPIs(HEALTH_ALL);
     renderStatusBreakdown(HEALTH_ALL);
+    renderStatusBarChart(HEALTH_ALL);
     renderHealthTable();
     renderABC();
+    renderTierBarChart();
+    renderMap();
     renderForecast();
     renderRoute();
+    updateDataBadge();
+  }
+
+  /* ============================= BRING YOUR OWN DATA (CSV upload) ============================= */
+  const TABLE_COLUMNS = {
+    warehouses: ["warehouse_id","lat","lon"],
+    products: ["product_id","name","unit_cost","unit_price"],
+    suppliers: ["product_id","supplier_name","lead_time_days","reliability_score"],
+    inventory: ["warehouse_id","product_id","on_hand_qty"],
+    demand_history: ["date","warehouse_id","product_id","units_sold"]
+  };
+  const UPLOAD_MAP = [
+    {inputId:"up-warehouses", table:"warehouses", statusId:"status-warehouses"},
+    {inputId:"up-products", table:"products", statusId:"status-products"},
+    {inputId:"up-suppliers", table:"suppliers", statusId:"status-suppliers"},
+    {inputId:"up-inventory", table:"inventory", statusId:"status-inventory"},
+    {inputId:"up-demand", table:"demand_history", statusId:"status-demand_history"}
+  ];
+
+  function setUploadStatus(statusId, ok, msg){
+    const el = document.getElementById(statusId);
+    if(!el) return;
+    el.textContent = msg;
+    el.className = "upload-status " + (ok ? "ok" : "err");
+  }
+
+  function parseCSVFile(file){
+    return new Promise((resolve, reject)=>{
+      if(typeof Papa === "undefined"){ reject(new Error("CSV parser did not load")); return; }
+      Papa.parse(file, {
+        header:true, dynamicTyping:true, skipEmptyLines:true,
+        complete: res => resolve(res.data),
+        error: err => reject(err)
+      });
+    });
+  }
+
+  function validateColumns(rows, required){
+    if(!rows || !rows.length) return {ok:false, missing:required, empty:true};
+    const cols = Object.keys(rows[0]);
+    const missing = required.filter(c=>!cols.includes(c));
+    return {ok: missing.length===0, missing};
+  }
+
+  function rebuildDemandGrid(rows){
+    let minTime=Infinity, maxTime=-Infinity;
+    const parsed = [];
+    rows.forEach(r=>{
+      const t = Date.parse(String(r.date)+"T00:00:00Z");
+      if(isNaN(t)) return;
+      if(t<minTime) minTime=t;
+      if(t>maxTime) maxTime=t;
+      parsed.push({...r, _t:t});
+    });
+    if(!parsed.length) return {ok:false, skipped:rows.length};
+    const nDays = Math.round((maxTime-minTime)/86400000)+1;
+    const whIds = WH.map(w=>w.warehouse_id);
+    const prIds = PR.map(p=>p.product_id);
+    const tmpWhIndex={}; whIds.forEach((id,i)=>tmpWhIndex[id]=i);
+    const tmpPrIndex={}; prIds.forEach((id,i)=>tmpPrIndex[id]=i);
+    const grid = whIds.map(()=> prIds.map(()=> new Array(nDays).fill(0)));
+    let skipped=0;
+    parsed.forEach(r=>{
+      const wi=tmpWhIndex[r.warehouse_id], pi=tmpPrIndex[r.product_id];
+      if(wi===undefined || pi===undefined){ skipped++; return; }
+      const dayIdx = Math.round((r._t-minTime)/86400000);
+      grid[wi][pi][dayIdx] += Number(r.units_sold)||0;
+    });
+    GRID = grid; N_DAYS = nDays; START_DATE = new Date(minTime).toISOString().slice(0,10);
+    return {ok:true, skipped, rows:parsed.length};
+  }
+
+  function applyTable(table, rows){
+    if(table==="warehouses"){
+      WH = rows.map(r=>({...r, lat:Number(r.lat), lon:Number(r.lon)}));
+      return {rows: WH.length};
+    }
+    if(table==="products"){
+      PR = rows.map(r=>({...r, unit_cost:Number(r.unit_cost), unit_price:Number(r.unit_price)}));
+      return {rows: PR.length};
+    }
+    if(table==="suppliers"){
+      SUP = rows.map(r=>({...r, lead_time_days:Number(r.lead_time_days), reliability_score:Number(r.reliability_score)}));
+      return {rows: SUP.length};
+    }
+    if(table==="inventory"){
+      INV = rows.map(r=>({...r, on_hand_qty:Number(r.on_hand_qty)}));
+      return {rows: INV.length};
+    }
+    if(table==="demand_history"){
+      return rebuildDemandGrid(rows);
+    }
+    return {rows:0};
+  }
+
+  async function handleUpload(table, statusId, file){
+    try{
+      const rows = await parseCSVFile(file);
+      const v = validateColumns(rows, TABLE_COLUMNS[table]);
+      if(!v.ok){
+        setUploadStatus(statusId, false, v.empty ? "That file looks empty." : `Missing column(s): ${v.missing.join(", ")}`);
+        return;
+      }
+      const result = applyTable(table, rows);
+      if(result && result.ok===false){
+        setUploadStatus(statusId, false, "Couldn't parse any valid dates in the date column.");
+        return;
+      }
+      usingDemoData = false;
+      const skippedNote = (result && result.skipped) ? ` (${result.skipped.toLocaleString()} row(s) skipped — unknown warehouse/product ID)` : "";
+      setUploadStatus(statusId, true, `Loaded ${(result.rows||rows.length).toLocaleString()} rows.${skippedNote}`);
+      rebuildAndRender();
+    } catch(e){
+      setUploadStatus(statusId, false, "Couldn't read that file — make sure it's a CSV export.");
+    }
+  }
+
+  function resetToDemo(){
+    const clone = JSON.parse(JSON.stringify(DEMO_DATA));
+    WH = clone.warehouses; PR = clone.products; SUP = clone.suppliers;
+    INV = clone.inventory; GRID = clone.demandGrid; N_DAYS = clone.nDays; START_DATE = clone.startDate;
+    usingDemoData = true;
+    UPLOAD_MAP.forEach(u=>{ setUploadStatus(u.statusId, true, ""); document.getElementById(u.inputId).value = ""; });
+    rebuildAndRender();
+  }
+
+  function bindUploads(){
+    UPLOAD_MAP.forEach(u=>{
+      const input = document.getElementById(u.inputId);
+      if(!input) return;
+      input.addEventListener("change", e=>{
+        const file = e.target.files[0];
+        if(file) handleUpload(u.table, u.statusId, file);
+      });
+    });
+    const resetBtn = document.getElementById("resetDemoBtn");
+    if(resetBtn) resetBtn.addEventListener("click", resetToDemo);
+  }
+
+  function bindEditableTitle(){
+    const el = document.getElementById("dashTitle");
+    if(!el) return;
+    try{
+      const saved = localStorage.getItem("sc_dashboard_title");
+      if(saved) el.textContent = saved;
+    }catch(e){}
+    el.addEventListener("blur", ()=>{
+      const text = el.textContent.trim() || "Network Control";
+      el.textContent = text;
+      try{ localStorage.setItem("sc_dashboard_title", text); }catch(e){}
+    });
+    el.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); el.blur(); } });
+  }
+
+  function init(){
+    populateSelects();
+    bindEvents();
+    bindUploads();
+    bindEditableTitle();
+    HEALTH_ALL = inventoryHealthScan();
+    renderKPIs(HEALTH_ALL);
+    renderStatusBreakdown(HEALTH_ALL);
+    renderStatusBarChart(HEALTH_ALL);
+    renderHealthTable();
+    renderABC();
+    renderTierBarChart();
+    renderMap();
+    renderForecast();
+    renderRoute();
+    updateDataBadge();
   }
 
   if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); }
