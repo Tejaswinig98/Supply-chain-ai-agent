@@ -1,12 +1,7 @@
 """
 chat_agent.py
 The AI agent itself: wraps Claude's tool-use loop around the supply-chain
-optimization functions so you can ask natural-language questions like:
-
-  "What should I reorder at the Dallas warehouse this week?"
-  "Which products are at stockout risk?"
-  "What's the cheapest route to visit all six warehouses starting from Atlanta?"
-  "Forecast demand for USB-C cables over the next 45 days."
+optimization functions so you can ask natural-language questions 
 
 Requires an ANTHROPIC_API_KEY environment variable.
 """
@@ -31,15 +26,6 @@ inventory, forecast demand, calculate reorder points / EOQ, run ABC (Pareto) ana
 scan for stockout or overstock risk across the network, and optimize multi-stop delivery \
 routes between warehouses.
 
-Guidelines:
-- Always use tools to get real numbers rather than guessing.
-- When asked broad questions ("what needs attention?"), use scan_inventory_health first.
-- When recommending a reorder, state the quantity, the supplier, and the lead time.
-- Be concise and lead with the actionable recommendation, then show the supporting numbers.
-- If a request is ambiguous (e.g. no warehouse specified), make a reasonable assumption, \
-state it, and proceed — don't just ask a clarifying question if you can reasonably act.
-- Flag numbers that seem surprising (e.g. huge reorder quantities, near-zero stock) so a \
-human reviews them before acting.
 """
 
 
